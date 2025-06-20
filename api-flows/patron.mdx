@@ -135,10 +135,10 @@ The client sends an HTTP request with an authorization header and request body t
 
 ```curl
 curl -X POST \
-  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/orders'
-  -H 'accept: application/json'
-  -H 'content-type: application/json'
-  -H 'Authorization: Bearer {bearerToken}'
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/orders' \
+  -H 'accept: application/json' \
+  -H 'content-type: application/json' \
+  -H 'Authorization: Bearer {bearerToken}' \
   -d '{
     "name": "Sarah",
     "table_number": 13,
