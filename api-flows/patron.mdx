@@ -55,7 +55,9 @@ If the request was successful, the server responds with a `200 okay` status code
 
 ## Step 2: Check ingredient quantities
 
-You'll need to confirm the in stock status of the ingredients of the dishes. Any dishes that have ingredients with an `in_stock_qty` of `0` should display as `unavailable`.
+Next, confirm the in stock quantities of the ingredients of the dishes. For this call you'll need the `ingredient_id` for each ingredient you want to check and you'll filter the response to include only the `in_stock_qty` an `name` fields.
+
+<Tip>Any dishes that have ingredients with an `in_stock_qty` of `0` should display as `unavailable` so they cannot be added to an order.</Tip>
 
 ### Request
 
@@ -77,15 +79,35 @@ If the request was successful, the server responds with a `200 okay` status code
 
 ## Step 3: View dish details
 
+When the patron selects a dish to view, submit a GET request to return the dish's `name`, `price`, `description`, and `ingredients`.
+
 ### Request
 
-tk
+The client sends HTTP requests to retrieve the `name`, `price`, `description`, and `ingredients` properties for the selected dish. For this call, you'll need the `id` for the selected dish.
+
+```curl
+curl -X GET 'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/dishes/{id}?fields=name|price|description|ingredients'
+```
 
 ### Response
 
-tk
+If the request was successful, the server responds with a `200 okay` status code and a response body that includes the following properties:
+
+| Property     | Type    |  Description      |
+| ------------ | ------- | ----------------- |
+|  `id`   | string        | The dish id       |
+|  `name`     | string    | The name of the dish.       |
+|  `description`   |  string     |   The long-text description of the dish.  |
+| `price` | integer | The price of the dish. |
+| `image_name` |  string | The name of the image associated with the dish, if 
+| `ingredients` | array of objects |  Object that contains the ingredient details of the ingredients included in the dish. |
+| `ingredients.ingredient_id` | string | The id of the ingredient (required for calls later in this flow) |
+| `ingredients.is_essential` | boolean | Indicates whether this ingredient is required to make this dish or not. |
+| `ingredients._id` | string | Some other id for the ingredient |
 
 ## Step 4: Add a dish and view the cart
+
+The patron can now select the **Add to order** button to add the dish to their cart and then view the cart when they are ready to place their order.
 
 ## Step 5: Place the order
 
@@ -98,3 +120,5 @@ See previous example.
 See previous example.
 
 ## Step 6: Confirm the order
+
+The patron should receive a success message upon the successful creation of the order. The success message should read "We've received your order"
