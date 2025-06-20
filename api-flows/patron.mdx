@@ -36,36 +36,21 @@ curl -X GET 'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/dishe
 
 If the request was successful, the server responds with a `200 okay` status code and a response body containing the following properties:
 
-| Property         | Type   |  Description          |
-
-| ------------- | ------- | ----------------- |
-
-|     `id`      | string        | The dish id (required for calls later in this flow)       |
-
+| Property     | Type    |  Description      |
+| ------------ | ------- | ----------------- |
+|  `id`   | string        | The dish id (required for calls later in this flow)       |
 |     `created_at`      |  string       |    The date and time the dish was created. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`    |
-
 |     `updated_at`      |    string     |    The date and time the dish was most recently updated. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`    |
-
 |      `name`     | string        | The name of the dish.       |
-
 |    `description`       |  string       |   The long-text description of the dish.     |
-
 |     `category`      |  enum string       |  The category the dish belongs to. Values: `Appetizers`, `Main Course`, and `Dessert`.    |
-
 | `preparation_time` | integer | The time it takes to prepare the dish, in minutes. |
-
 | `price` | integer | The price of the dish. |
-
 | `image_name` |  string | The name of the image associated with the dish, if available. |
-
 | `station` | enum string |  The name of the station the dish is prepared at. Values: `hot`, `cold`, `beverage` |
-
 | `ingredients` | array of objects |  Object that contains the ingredient details of the ingredients included in the dish. |
-
 | `ingredients.ingredient_id` | string | The id of the ingredient (required for calls later in this flow) |
-
 | `ingredients.is_essential` | boolean | Indicates whether this ingredient is required to make this dish or not. |
-
 | `ingredients._id` | string | Some other id for the ingredient |
 
 ## Step 2: Check ingredient quantities
