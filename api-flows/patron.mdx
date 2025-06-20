@@ -55,13 +55,25 @@ If the request was successful, the server responds with a `200 okay` status code
 
 ## Step 2: Check ingredient quantities
 
+You'll need to confirm the in stock status of the ingredients of the dishes. Any dishes that have ingredients with an `in_stock_qty` of `0` should display as `unavailable`.
+
 ### Request
 
-See previous example.
+The client sends HTTP requests to retrieve the `name` and `in_stock_qty` properties for each ingredient.
+
+```curl
+curl -X GET 'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/ingredients/{ingredient_id}?fields=in_stock_qty|name'
+```
 
 ### Response
 
-See previous example.
+If the request was successful, the server responds with a `200 okay` status code and a response body that includes the following properties:
+
+| Property     | Type    |  Description      |
+| ------------ | ------- | ----------------- |
+| `id`         | string  | The id of the ingredient |
+| `name`       | string  | The name of the ingredient |
+| `in_stock_qty` | integer | The in stock amount of the ingredient |
 
 ## Step 3: View dish details
 
