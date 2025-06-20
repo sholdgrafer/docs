@@ -3,17 +3,72 @@ title: "Patron API Flow"
 description: "API flow for patrons using the Point of Service API to place a food order."
 ---
 
-## 1. Browse dishes by category
+# Point of Sale Patron API Flow
+
+To provide the proper experience to patrons using the Point of Sale (POS) API, you'll need to build the following capabilities:
+
+1. Allow the patron to browse available dishes by category (appetizers, main course, and desserts).
+2. Ensure the ingredients for the dish are in stock.
+3. Allow the patron to view the dish details prior to ordering.
+4. Let the patron add the dish to their cart and view it.
+5. Create the order in the system.
+6. Confirm to the patron the order has been successfully placed.
+
+## Step 1: Browse dishes by category
+
+Patrons should be able to view dishes specific to the category they select.
+
+Available values for categories:
+
+- `Appetizers`
+- `Main Course`
+- `Dessert`
 
 ### Request
 
-The client sends an HTTP request to `{describe the purpose of the API request}`.
+The client sends an HTTP request to retrieve a list of dishes filtered by the selected category.
+
+```curl
+curl -X GET 'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/dishes?filter=category.eq~{categoryName}
+```
 
 ### Response
 
-If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
+If the request was successful, the server responds with a `200 okay` status code and a response body containing the following properties:
 
-## 2. Check ingredient quantities
+| Property         | Type   |  Description          |
+
+| ------------- | ------- | ----------------- |
+
+|     `id`      | string        | The dish id (required for calls later in this flow)       |
+
+|     `created_at`      |  string       |    The date and time the dish was created. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`    |
+
+|     `updated_at`      |    string     |    The date and time the dish was most recently updated. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`    |
+
+|      `name`     | string        | The name of the dish.       |
+
+|    `description`       |  string       |   The long-text description of the dish.     |
+
+|     `category`      |  enum string       |  The category the dish belongs to. Values: `Appetizers`, `Main Course`, and `Dessert`.    |
+
+| `preparation_time` | integer | The time it takes to prepare the dish, in minutes. |
+
+| `price` | integer | The price of the dish. |
+
+| `image_name` |  string | The name of the image associated with the dish, if available. |
+
+| `station` | enum string |  The name of the station the dish is prepared at. Values: `hot`, `cold`, `beverage` |
+
+| `ingredients` | array of objects |  Object that contains the ingredient details of the ingredients included in the dish. |
+
+| `ingredients.ingredient_id` | string | The id of the ingredient (required for calls later in this flow) |
+
+| `ingredients.is_essential` | boolean | Indicates whether this ingredient is required to make this dish or not. |
+
+| `ingredients._id` | string | Some other id for the ingredient |
+
+## Step 2: Check ingredient quantities
 
 ### Request
 
@@ -23,7 +78,7 @@ See previous example.
 
 See previous example.
 
-## 3. View dish details
+## Step 3: View dish details
 
 ### Request
 
@@ -33,8 +88,16 @@ tk
 
 tk
 
-## 4. Add a dish and view the cart
+## Step 4: Add a dish and view the cart
 
-## 5. Place the order
+## Step 5: Place the order
 
-## 6. Confirm the order
+### Request
+
+See previous example.
+
+### Response
+
+See previous example.
+
+## Step 6: Confirm the order
