@@ -29,7 +29,9 @@ Available values for categories:
 The client sends an HTTP request to retrieve a list of dishes filtered by the selected category.
 
 ```curl
-curl -X GET 'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/dishes?filter=category.eq~{categoryName}
+curl -X GET \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/dishes?filter=category.eq~{categoryName} \
+  -H 'accept: application/json'
 ```
 
 ### Response
@@ -64,7 +66,9 @@ Next, confirm the in stock quantities of the ingredients of the dishes. For this
 The client sends HTTP requests to retrieve the `name` and `in_stock_qty` properties for each ingredient.
 
 ```curl
-curl -X GET 'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/ingredients/{ingredient_id}?fields=in_stock_qty|name'
+curl -X GET \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/ingredients/{ingredient_id}?fields=in_stock_qty|name' \
+  -H 'accept: application/json'
 ```
 
 ### Response
@@ -86,7 +90,9 @@ When the patron selects a dish to view, submit a GET request to return the dish'
 The client sends HTTP requests to retrieve the `name`, `price`, `description`, and `ingredients` properties for the selected dish. For this call, you'll need the `id` for the selected dish.
 
 ```curl
-curl -X GET 'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/dishes/{id}?fields=name|price|description|ingredients'
+curl -X GET \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/dishes/{id}?fields=name|price|description|ingredients'
+  -H 'accept: application/json'
 ```
 
 ### Response
@@ -111,14 +117,55 @@ The patron can now select the **Add to order** button to add the dish to their c
 
 ## Step 5: Place the order
 
+When the patron places their order, submit a POST request to the `/orders` endpoint to create the order. 
+
+This request requires authorization with a bearer token, as well as the following properties in the request body: 
+
+| Property     | Type    |  Description      |
+| ------------ | ------- | ----------------- |
+| `name`       | string | The name of the patron|
+| `table_number` | integer | The patron's table number |
+| `dish_ids` | array of strings | The ids of all the dishes included in the order |
+| `special_requests` | string | The text the patron included in the special request field of their order |
+| `scheduled_at` | string | *nullable* The date and time the order is scheduled to arrive, using ISO 8601 format |
+
 ### Request
 
-See previous example.
+The client sends an HTTP request with an authorization header and request body that includes the required properties for an order.
+
+```curl
+curl -X POST \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/orders'
+  -H 'accept: application/json'
+  -H 'content-type: application/json'
+  -H 'Authorization: Bearer {bearerToken}'
+  -d '{
+    "name": "Sarah",
+    "table_number": 13,
+    "dish_ids": [
+      "{id}"
+    ],
+    "special_requests": "None",
+    "scheduled at": null
+  }'
+```
 
 ### Response
 
-See previous example.
+If the request was successful, the server responds with a `201 created` status code and a response body that includes the following properties:
+
+| Property     | Type    |  Description      |
+| ------------ | ------- | ----------------- |
+|  `id`   | string    | The order id     |
+|  `created_at`  | string   |  The date and time the order was created. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`  |
+|  `updated_at`  |  string  | The date and time the order was most recently updated. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`  |
+| `scheduled_at` | string | The date and time the order is scheduled for, using ISO 8601 format. This field is *nullable* |
+| `table_number` | integer | The patron's table number |
+| `status` | string | The status of the order (by default, just submitted orders are in the `Received` status) |
+| `priority` | integer | The order's priority (by default, all orders receive a status of `3`) |
+| `dish_ids` | array of strings | The dish ids included in the order |
+| `special_requests` | string | The text the patron included in the special request field of their order |
 
 ## Step 6: Confirm the order
 
-The patron should receive a success message upon the successful creation of the order. The success message should read "We've received your order"
+The patron should receive a success message that says, "We've received your order!" upon the successful creation of the order.
