@@ -3,16 +3,139 @@ title: "Staff API Flow"
 description: "API flow for staff using the Point of Service API to view and manage orders from patrons."
 ---
 
-## 1. View orders
+# Point of Sale Staff API Flow
 
-## 2. Prioritize orders
+To provide the proper experience to staff using the Point of Sale (POS) API, you'll need to build the following capabilities:
 
-## 3. Initiate order prep
+1. View orders
+2. Prioritize orders
+3. Initiate order preparation
+4. View order prep by stations
+5. View dish ingredients
+6. Ready the order for assembly
+7. Assemble the order
 
-## 4. View order prep by station
+## Step 1: View orders
 
-## 5. View dish ingredients
+When a staff member is ready to view the orders in the queue, they'll click **Orders** in the side navigation. The orders display should include ten orders per page and be sorted by the `created_at` field so the newest order displays first.
 
-## 6. Ready the dish for assembly
+### Request
 
-## 7.  Assemble the order
+The client sends an HTTP request to retreive the list of orders.
+
+```curl
+
+```
+
+
+### Response
+
+If the request was successful, the server responds with a `200 okay` status code with the response body containing the following properties:
+
+| Property     | Type    |  Description      |
+| ------------ | ------- | ----------------- |
+|   |   |
+|   |   |
+|   |   |
+|   |   |
+|   |   |
+|   |   |
+|   |   |
+|   |   |
+
+## Step 2: Prioritize orders
+
+Filter by `Received` status and sort by priority.
+
+### Request
+
+The client sends an HTTP request to
+
+
+### Response
+
+If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
+
+
+
+## Step 3: Initiate order prep
+
+Update order status to `In Progress`. Staff at the various stations can then see the list of dishes they need to prep.
+
+### Request
+
+The client sends an HTTP request to
+
+
+### Response
+
+If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
+
+
+
+## Step 4: View order prep by station
+
+The staff at the various stations should be be able to see which orders to prepare (those that have the `In Progress` status) and which dishes in the order are prepared at their station. 
+
+Station values are:
+* `hot`
+* `cold`
+* `beverage`
+
+
+
+### Request
+
+The client sends an HTTP request to
+
+
+### Response
+
+If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
+
+
+
+## Step 5: View dish ingredients
+
+The staff member at a station will click on the name of a dish in the order and should be able to see the dish's ingredients to help them properly prepare the dish.
+
+### Request
+
+The client sends an HTTP request to
+
+
+### Response
+
+If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
+
+
+
+## Step 6: Ready the order for assembly
+
+Once all dishes are ready, the expeditor will update the order status to `Ready for assembly`.
+
+### Request
+
+The client sends an HTTP request to
+
+
+### Response
+
+If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
+
+
+
+## Step 7:  Assemble the order
+
+The staff at the staging area will view orders filtered by the `Ready for assembly` status. They'll assemble the orders and then upadte the order status to `On the way`.
+
+### Request
+
+The client sends an HTTP request to
+
+
+### Response
+
+If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
+
+
