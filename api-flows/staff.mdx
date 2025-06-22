@@ -7,7 +7,7 @@ description: "API flow for staff using the Point of Service API to view and mana
 
 To provide the proper experience to staff using the Point of Sale (POS) API, you'll need to build the following capabilities:
 
-1. View orders
+1. View new orders
 2. Prioritize orders
 3. Initiate order preparation
 4. View order prep by stations
@@ -15,127 +15,170 @@ To provide the proper experience to staff using the Point of Sale (POS) API, you
 6. Ready the order for assembly
 7. Assemble the order
 
-## Step 1: View orders
+## Step 1: View new orders
 
-When a staff member is ready to view the orders in the queue, they'll click **Orders** in the side navigation. The orders display should include ten orders per page and be sorted by the `created_at` field so the newest order displays first.
+Once an order is placed, it will appear on the staff expeditor's terminal.
 
 ### Request
 
-The client sends an HTTP request to retreive the list of orders.
+The client sends an HTTP request to retreive the list of orders in the `Received` status, sorted by the `created_at` field so the newest order displays first. Additionally, the terminal should limit the view to 10 orders per page.
 
-```curl
+Endpoint: **GET /orders**
 
+```curl 
+curl -X 'GET' \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/orders?filter=status.eq~Received&limit=10&offset=0&order=desc&sort=created_date' \
+  -H 'accept: application/json'
 ```
-
 
 ### Response
 
-If the request was successful, the server responds with a `200 okay` status code with the response body containing the following properties:
-
-| Property     | Type    |  Description      |
-| ------------ | ------- | ----------------- |
-|   |   |
-|   |   |
-|   |   |
-|   |   |
-|   |   |
-|   |   |
-|   |   |
-|   |   |
+If the request was successful, the server responds with a `200 okay` status code with the response body containing the new orders and their related properties.
 
 ## Step 2: Prioritize orders
 
-Filter by `Received` status and sort by priority.
+The expeditor may need to adjust the priority of an order. By default, all orders have a priority of 3. The expeditor can increase the priority to 1 or decrease to 5 depending on the situation.
 
 ### Request
 
-The client sends an HTTP request to
+The client sends an HTTP request to increase the order `priority` to 1. You'll need the order's `id` to make this request as well as the required order properties for the request body.
 
+Endpoint: **PUT /orders/{id}**
+
+```curl 
+curl -X 'PUT' \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/orders/{id}' \
+  -H 'accept: application/json' \
+  -H 'content-type: application/json' \
+  -d '{
+    "name": "Sarah",
+    "table_number": 13,
+    "status": "Received",
+    "priority": 1,
+    "dish_ids": [
+      "{id}"
+      ],
+    }'
+```
 
 ### Response
 
-If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
+If the request was successful, the server responds with a `200 OK` status code with the response body containing the updated resource.
 
 
+## Step 3: Initiate order preparation
 
-## Step 3: Initiate order prep
-
-Update order status to `In Progress`. Staff at the various stations can then see the list of dishes they need to prep.
+The expeditor can now update the order status to `In Progress`. This change in status allows the staff at the various stations to see the list of dishes they need to prepare.
 
 ### Request
 
-The client sends an HTTP request to
+The client sends an HTTP request to change the status of an order from `Received` to `In Progress`. You'll need the order's `id` to make this request as well as the required order properties for the request body.
 
+Endpoint: **PUT /orders/{id}**
+
+```curl 
+curl -X 'PUT' \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/orders/{id}' \
+  -H 'accept: application/json' \
+  -H 'content-type: application/json' \
+  -d '{
+    "name": "Sarah",
+    "table_number": 13,
+    "status": "In Progress",
+    "priority": 1,
+    "dish_ids": [
+      "{id}"
+      ],
+    }'
+```
 
 ### Response
 
-If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
-
+If the request was successful, the server responds with a `200 OK` status code with the response body containing the updated resource.
 
 
 ## Step 4: View order prep by station
 
-The staff at the various stations should be be able to see which orders to prepare (those that have the `In Progress` status) and which dishes in the order are prepared at their station. 
+The staff at their various stations should now be able to see which orders to prepare and which dishes in the order are prepared at their station. 
 
 Station values are:
 * `hot`
 * `cold`
 * `beverage`
 
-
-
 ### Request
 
-The client sends an HTTP request to
+The client sends an HTTP request to retreive the orders, filtering the response to only include dishes belonging to a specific `station`. You'll need the order's `id` for this request.
 
+Endpoint: **GET /orders/{id}/dishes**
+
+```curl 
+curl -X 'GET' \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/orders/{id}/dishes?filter=station.eq~hot' \
+  -H 'accept: application/json'
+```
 
 ### Response
 
-If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
+If the request was successful, the server responds with a `200 OK` status code with the response body containing all dishes for the order that belong to the specified station.
 
+The client app stores the dish ids to local storage to use in the next step.
 
 
 ## Step 5: View dish ingredients
 
-The staff member at a station will click on the name of a dish in the order and should be able to see the dish's ingredients to help them properly prepare the dish.
+To prepare the dishes, the staff at each station will need to see the dish's ingredients.
 
 ### Request
 
-The client sends an HTTP request to
+The client sends an HTTP request to retreive the ingredients for each dish. You'll need the dish `id` for this request, which the client app has saved in local storage.
 
+Endpoint: **GET /dishes/{id}/ingredients**
+
+```curl 
+curl -X 'GET' \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/dishes/{id}/ingredients' \
+  -H 'accept: application/json'
+```
 
 ### Response
 
-If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
-
+If the request was successful, the server responds with a `200 OK` status code with the response body containing an array of the dish's ingredients.
 
 
 ## Step 6: Ready the order for assembly
 
-Once all dishes are ready, the expeditor will update the order status to `Ready for assembly`.
+Once a station has finished preparing their dishes, they will update it as `Ready for assembly` on their terminal. The expeditor is then notified when all dishes in an order have been marked as ready.
 
-### Request
-
-The client sends an HTTP request to
-
-
-### Response
-
-If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
-
+This process is managed within the client app logic and no API calls are required for this step.
 
 
 ## Step 7:  Assemble the order
 
-The staff at the staging area will view orders filtered by the `Ready for assembly` status. They'll assemble the orders and then upadte the order status to `On the way`.
+The expeditor assembles the dishes from the stations to complete the order. Once assembled, the expeditor updates the order status to `On the way` for table-side orders or `Ready for Pickup` for take-away orders.
 
 ### Request
 
-The client sends an HTTP request to
+The client sends an HTTP request to update the `status` of the order from `In Progress` to `On the way`. You'll need the order `id` for this request and the required properties for the request body.
 
+Endpoint: **PUT /orders/{id}**
+
+```curl 
+curl -X 'PUT' \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/orders/{id}' \
+  -H 'accept: application/json' \
+  -H 'content-type: application/json' \
+  -d '{
+    "name": "Sarah",
+    "table_number": 13,
+    "status": "On the way",
+    "priority": 1,
+    "dish_ids": [
+      "{id}"
+      ],
+    }'
+```
 
 ### Response
 
-If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
-
-
+If the request was successful, the server responds with a `200 OK` status code with the response body containing the updated resource.
