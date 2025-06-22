@@ -23,7 +23,7 @@ Once an order is placed, it will appear on the staff expeditor's terminal.
 
 The client sends an HTTP request to retreive the list of orders in the `Received` status, sorted by the `created_at` field so the newest order displays first. Additionally, the terminal should limit the view to 10 orders per page.
 
-Endpoint: **GET /orders**
+**Endpoint**: `GET /orders`
 
 ```curl 
 curl -X 'GET' \
@@ -43,7 +43,7 @@ The expeditor may need to adjust the priority of an order. By default, all order
 
 The client sends an HTTP request to increase the order `priority` to 1. You'll need the order's `id` to make this request as well as the required order properties for the request body.
 
-Endpoint: **PUT /orders/{id}**
+**Endpoint**: `PUT /orders/{id}`
 
 ```curl 
 curl -X 'PUT' \
@@ -74,7 +74,7 @@ The expeditor can now update the order status to `In Progress`. This change in s
 
 The client sends an HTTP request to change the status of an order from `Received` to `In Progress`. You'll need the order's `id` to make this request as well as the required order properties for the request body.
 
-Endpoint: **PUT /orders/{id}**
+**Endpoint**: `PUT /orders/{id}`
 
 ```curl 
 curl -X 'PUT' \
@@ -110,7 +110,7 @@ Station values are:
 
 The client sends an HTTP request to retreive the orders, filtering the response to only include dishes belonging to a specific `station`. You'll need the order's `id` for this request.
 
-Endpoint: **GET /orders/{id}/dishes**
+**Endpoint**: `GET /orders/{id}/dishes`
 
 ```curl 
 curl -X 'GET' \
@@ -133,7 +133,7 @@ To prepare the dishes, the staff at each station will need to see the dish's ing
 
 The client sends an HTTP request to retreive the ingredients for each dish. You'll need the dish `id` for this request, which the client app has saved in local storage.
 
-Endpoint: **GET /dishes/{id}/ingredients**
+**Endpoint**: `GET /dishes/{id}/ingredients`
 
 ```curl 
 curl -X 'GET' \
@@ -161,7 +161,7 @@ The expeditor assembles the dishes from the stations to complete the order. Once
 
 The client sends an HTTP request to update the `status` of the order from `In Progress` to `On the way`. You'll need the order `id` for this request and the required properties for the request body.
 
-Endpoint: **PUT /orders/{id}**
+**Endpoint**: `PUT /orders/{id}`
 
 ```curl 
 curl -X 'PUT' \

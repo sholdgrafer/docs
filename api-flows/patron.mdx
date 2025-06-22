@@ -8,9 +8,9 @@ description: "API flow for patrons using the Point of Service API to place a foo
 To provide the proper experience to patrons using the Point of Sale (POS) API, you'll need to build the following capabilities:
 
 1. Allow the patron to browse available dishes by category (appetizers, main course, drinks, and desserts).
-2. Ensure the ingredients for the dish are in stock.
-3. Allow the patron to view the dish details prior to ordering.
-4. Let the patron add the dish to their cart and view it.
+2. Ensure the essential ingredients for the dish are in stock.
+3. Allow the patron to view dish details prior to ordering.
+4. Let the patron add a dish to their cart and view it.
 5. Create the order in the system.
 6. Confirm to the patron the order has been successfully placed.
 
@@ -29,7 +29,7 @@ Available values for categories:
 
 The client sends an HTTP request to retrieve a list of dishes filtered by the selected `category`.
 
-Endpoint: **GET /dishes**
+**Endpoint**: `GET /dishes`
 
 ```curl
 curl -X 'GET' \
@@ -39,36 +39,36 @@ curl -X 'GET' \
 
 ### Response
 
-If the request was successful, the server responds with a `200 okay` status code and a response body containing the list of dishes in that category. 
+If the request was successful, the server responds with a `200 okay` status code and a response body containing the list of dishes in that category.
 
 Each dish object includes the following properties:
 
-| Property     | Type    |  Description      |
-| ------------ | ------- | ----------------- |
-|  `id`   | string     | The dish id (required for calls later in this flow)       |
-|  `created_at`      |  string     |    The date and time the dish was created. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`    |
-|  `updated_at`      |    string    |    The date and time the dish was most recently updated. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`    |
-|  `name`     | string        | The name of the dish.       |
-|  `description`       |  string    |   The long-text description of the dish.     |
-|  `category`      |  enum string   |  The category the dish belongs to. Values: `Appetizers`, `Main Course`, and `Dessert`.    |
-| `preparation_time` | integer | The time it takes to prepare the dish, in minutes. |
-| `price` | integer | The price of the dish. |
-| `image_name` |  string | The name of the image associated with the dish, if available. |
-| `station` | enum string |  The name of the station the dish is prepared at. Values: `hot`, `cold`, `beverage` |
-| `ingredients` | array of objects |  Object that contains the ingredient details of the ingredients included in the dish. |
-| `ingredients.ingredient_id` | string | The id of the ingredient (required for calls later in this flow) |
-| `ingredients.is_essential` | boolean | Indicates whether this ingredient is required to make this dish or not. |
-| `ingredients._id` | string | Some other id for the ingredient |
+| Property                    | Type             | Description                                                                                                  |
+| --------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| `id`                        | string           | The dish id (required for calls later in this flow)                                                          |
+| `created_at`                | string           | The date and time the dish was created. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`               |
+| `updated_at`                | string           | The date and time the dish was most recently updated. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z` |
+| `name`                      | string           | The name of the dish.                                                                                        |
+| `description`               | string           | The long-text description of the dish.                                                                       |
+| `category`                  | enum string      | The category the dish belongs to. Values: `Appetizers`, `Main Course`, and `Dessert`.                        |
+| `preparation_time`          | integer          | The time it takes to prepare the dish, in minutes.                                                           |
+| `price`                     | integer          | The price of the dish.                                                                                       |
+| `image_name`                | string           | The name of the image associated with the dish, if available.                                                |
+| `station`                   | enum string      | The name of the station the dish is prepared at. Values: `hot`, `cold`, `beverage`                           |
+| `ingredients`               | array of objects | Object that contains the ingredient details of the ingredients included in the dish.                         |
+| `ingredients.ingredient_id` | string           | The id of the ingredient (required for calls later in this flow)                                             |
+| `ingredients.is_essential`  | boolean          | Indicates whether this ingredient is required to make this dish or not.                                      |
+| `ingredients._id`           | string           | Some other id for the ingredient                                                                             |
 
 ## Step 2: Check ingredient quantities
 
-Next, the client app must confirm the in stock quantities of the essential ingredients for the dishes. 
+Next, the client app must confirm the in stock quantities of the essential ingredients for the dishes.
 
 ### Request
 
 The client sends HTTP requests to retrieve the `name` and `in_stock_qty` properties for each ingredient. You'll need the `ingredient_id` for each ingredient to check and you'll filter the response to include only the `in_stock_qty` and `name` fields.
 
-Endpoint: **GET /ingredients/{id}**
+**Endpoint**: `GET /ingredients/{id}`
 
 ```curl
 curl -X 'GET' \
@@ -80,13 +80,15 @@ curl -X 'GET' \
 
 If the request was successful, the server responds with a `200 okay` status code and a response body that includes the following properties:
 
-| Property     | Type    |  Description      |
-| ------------ | ------- | ----------------- |
-| `id`         | string  | The id of the ingredient |
-| `name`       | string  | The name of the ingredient |
+| Property       | Type    | Description                           |
+| -------------- | ------- | ------------------------------------- |
+| `id`           | string  | The id of the ingredient              |
+| `name`         | string  | The name of the ingredient            |
 | `in_stock_qty` | integer | The in stock amount of the ingredient |
 
-<Note>Any dishes that have essential ingredients with an `in_stock_qty` of `0` should display as `unavailable` in the client app so they cannot be added to an order.</Note>
+<Note>
+  Any dishes that have essential ingredients with an `in_stock_qty` of `0` should display as `unavailable` in the client app so they cannot be added to an order.
+</Note>
 
 ## Step 3: View dish details
 
@@ -96,7 +98,7 @@ The patron will select a dish to see its details.
 
 The client sends HTTP requests to retrieve the `name`, `price`, `description`, and `ingredients` properties for the selected dish. For this call, you'll need the `id` for the selected dish.
 
-Endpoint: **GET /dishes/{id}**
+**Endpoint**: `GET /dishes/{id}`
 
 ```curl
 curl -X 'GET' \
@@ -108,17 +110,17 @@ curl -X 'GET' \
 
 If the request was successful, the server responds with a `200 okay` status code and a response body that includes the following properties:
 
-| Property     | Type    |  Description      |
-| ------------ | ------- | ----------------- |
-|  `id`   | string        | The dish id       |
-|  `name`     | string    | The name of the dish.       |
-|  `description`   |  string     |   The long-text description of the dish.  |
-| `price` | integer | The price of the dish. |
-| `image_name` |  string | The name of the image associated with the dish, if 
-| `ingredients` | array of objects |  Object that contains the ingredient details of the ingredients included in the dish. |
-| `ingredients.ingredient_id` | string | The id of the ingredient (required for calls later in this flow) |
-| `ingredients.is_essential` | boolean | Indicates whether this ingredient is required to make this dish or not. |
-| `ingredients._id` | string | Some other id for the ingredient |
+| Property                    | Type             | Description                                                                          |
+| --------------------------- | ---------------- | ------------------------------------------------------------------------------------ |
+| `id`                        | string           | The dish id                                                                          |
+| `name`                      | string           | The name of the dish.                                                                |
+| `description`               | string           | The long-text description of the dish.                                               |
+| `price`                     | integer          | The price of the dish.                                                               |
+| `image_name`                | string           | The name of the image associated with the dish, if                                   |
+| `ingredients`               | array of objects | Object that contains the ingredient details of the ingredients included in the dish. |
+| `ingredients.ingredient_id` | string           | The id of the ingredient (required for calls later in this flow)                     |
+| `ingredients.is_essential`  | boolean          | Indicates whether this ingredient is required to make this dish or not.              |
+| `ingredients._id`           | string           | Some other id for the ingredient                                                     |
 
 ## Step 4: Add a dish and view the cart
 
@@ -128,21 +130,21 @@ The patron can now add the dish to their cart and then view the cart when they a
 
 When the patron has finished adding dishes to their cart, they can then place their order.
 
-This request requires authorization with a bearer token, as well as the following properties in the request body: 
+This request requires authorization with a bearer token, as well as the following properties in the request body:
 
-| Property     | Type    |  Description      |
-| ------------ | ------- | ----------------- |
-| `name`       | string | The name of the patron|
-| `table_number` | integer | The patron's table number |
-| `dish_ids` | array of strings | The ids of all the dishes included in the order |
-| `special_requests` | string | The text the patron included in the special request field of their order |
-| `scheduled_at` | string | *nullable* The date and time the order is scheduled to arrive, using ISO 8601 format |
+| Property           | Type             | Description                                                                          |
+| ------------------ | ---------------- | ------------------------------------------------------------------------------------ |
+| `name`             | string           | The name of the patron                                                               |
+| `table_number`     | integer          | The patron's table number                                                            |
+| `dish_ids`         | array of strings | The ids of all the dishes included in the order                                      |
+| `special_requests` | string           | The text the patron included in the special request field of their order             |
+| `scheduled_at`     | string           | _nullable_ The date and time the order is scheduled to arrive, using ISO 8601 format |
 
 ### Request
 
 The client sends an HTTP request with an authorization header and request body that includes the dish ids from local storage and the other required properties for the order.
 
-Endpoint: **POST /orders**
+**Endpoint**: `POST /orders`
 
 ```curl
 curl -X 'POST' \
@@ -165,18 +167,18 @@ curl -X 'POST' \
 
 If the request was successful, the server responds with a `201 created` status code and a response body that includes the following properties:
 
-| Property     | Type    |  Description      |
-| ------------ | ------- | ----------------- |
-|  `id`   | string    | The order id     |
-|  `created_at`  | string   |  The date and time the order was created. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`  |
-|  `updated_at`  |  string  | The date and time the order was most recently updated. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`  |
-| `scheduled_at` | string | The date and time the order is scheduled for, using ISO 8601 format. This field is *nullable* |
-| `table_number` | integer | The patron's table number |
-| `status` | string | The status of the order (by default, just submitted orders are in the `Received` status) |
-| `priority` | integer | The order's priority (by default, all orders receive a status of `3`) |
-| `dish_ids` | array of strings | The dish ids included in the order |
-| `special_requests` | string | The text the patron included in the special request field of their order |
+| Property           | Type             | Description                                                                                                   |
+| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| `id`               | string           | The order id                                                                                                  |
+| `created_at`       | string           | The date and time the order was created. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z`               |
+| `updated_at`       | string           | The date and time the order was most recently updated. Uses ISO 8601 standard. Ex: `2025-04-05T14:55:03.824Z` |
+| `scheduled_at`     | string           | The date and time the order is scheduled for, using ISO 8601 format. This field is _nullable_                 |
+| `table_number`     | integer          | The patron's table number                                                                                     |
+| `status`           | string           | The status of the order (by default, just submitted orders are in the `Received` status)                      |
+| `priority`         | integer          | The order's priority (by default, all orders receive a status of `3`)                                         |
+| `dish_ids`         | array of strings | The dish ids included in the order                                                                            |
+| `special_requests` | string           | The text the patron included in the special request field of their order                                      |
 
 ## Step 6: Confirm the order
 
-The patron should receive a success message that says, "We've received your order!" upon the successful creation of the order.
+The patron should receive a success message that says, "We've received your order\!" upon the successful creation of the order.
