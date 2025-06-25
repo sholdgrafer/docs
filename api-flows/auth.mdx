@@ -1,7 +1,12 @@
 # Authentication Flow
 
-The Point of Sale (POS) API uses Basic authentication. (tk something about protected endpoints and bearer tokens?)
+The Point of Sale (POS) API admin panel uses Basic authentication and the OAuth Resource Owner Password Credentials (ROPC) Flow.
 
+The admin panel is used to create user accounts for the POS system, create and update dishes, and create and update dish ingredients. To provide the proper experience for admins using the POS admin panel, you'll need to provide the following capabilities: 
+
+1. Create an account
+2. Log in to the admin panel
+3. Refresh an account's access token
 
 ## Step 1: Create account
 
@@ -21,14 +26,14 @@ curl -X 'POST' \
   -H 'content-type: application/json' \
   -d '{
     "grant_type": "password",
-    "user_name": "sholdgrafer",
-    "password": "P@ssw0rd!"
+    "user_name": "my-user-name",
+    "password": "my-secure-password"
   }'
 ```
 
 ### Response
 
-If the request was successful, the server responds with a `201 Created` status code with the response body containing the new user account resourse.
+If the request was successful, the server responds with a `201 Created` status code with the response body containing the new user account resource.
 
 
 ## Step 2: Log in as the admin
@@ -41,6 +46,18 @@ The client sends an HTTP request that includes a basic authorization header and 
 
 **Endpoint**: `POST /auth/token`
 
+```curl
+curl -X 'POST' \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/auth/token' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Basic {base64EncodedclientidclientSecret}' \
+  -H 'content-type: application/json' \
+  -d '{
+    "grant_type": "password",
+    "user_name": "my-user-name",
+    "password": "my-secure-password"
+  }'
+```
 
 ### Response
 
@@ -48,16 +65,31 @@ If the request was successful, the server responds with a `201 Created` status c
 
 Response body properties:
 
-tk properties table
-
+| Property   | Type  | Description            |
+| --------   | ----- | ---------------------- |
+| `access_token` | string | The UUID used for authentication, required for accessing protected endpoints |
+| `expires_in` | integer | The time, in seconds, the access token remains valid | 
+| `refresh_token` | string | The value of the refresh token, used to obtain the new access token after it expires |
+| `token_type` | string | The type of access token, which will always be `Bearer` |
 
 ## Refresh the access token
 
+After the `access_token` expires, you can refresh the access token by sending a POST call to the `/auth/refresh-token` endpoint.
 
 ### Request
 
-The client sends an HTTP request to `{describe the purpose of the API request}`.
+The client sends an HTTP request using the `refresh_token` value in the authorization header.
+
+**Endpoint**: `POST /auth/refresh-token`
+
+```curl
+curl -X 'POST' \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/auth/refresh-token' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer {refreshToken}' \
+  -d ''
+```
 
 ### Response
 
-If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.
+If the request was successful, the server responds with a `201 Created` status code with the response body containing the new access and refresh tokens.
