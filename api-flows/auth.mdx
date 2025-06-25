@@ -1,5 +1,63 @@
----
-title: 'New file'
-description: 'Description of your new file.'
----
+# Authentication Flow
 
+The Point of Sale (POS) API uses Basic authentication. (tk something about protected endpoints and bearer tokens?)
+
+
+## Step 1: Create account
+
+The user will first create their account for the POS admin client app.
+
+### Request
+
+The client sends an HTTP request to the `/users` endpoint, including the `user_name`, `password`, and `grant_type` properties in the request body.
+
+**Endpoint**: `POST /users`
+
+```curl
+curl -X 'POST' \
+  'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev/users' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Basic {basicAuthToken}' \
+  -H 'content-type: application/json' \
+  -d '{
+    "grant_type": "password",
+    "user_name": "sholdgrafer",
+    "password": "P@ssw0rd!"
+  }'
+```
+
+### Response
+
+If the request was successful, the server responds with a `201 Created` status code with the response body containing the new user account resourse.
+
+
+## Step 2: Log in as the admin
+
+Admin users will log into the admin portal to perform actions like creating users and dishes or adding/updating ingredients. To send requests to admin endpoints, the client app requires an access token which is obtained by making a POST call to the `/auth/token` endpoint.
+
+### Request
+
+The client sends an HTTP request that includes a basic authorization header and the user's `user_name` and `password`.
+
+**Endpoint**: `POST /auth/token`
+
+
+### Response
+
+If the request was successful, the server responds with a `201 Created` status code with an access token in the response body.
+
+Response body properties:
+
+tk properties table
+
+
+## Refresh the access token
+
+
+### Request
+
+The client sends an HTTP request to `{describe the purpose of the API request}`.
+
+### Response
+
+If the request was successful, the server responds with a `{insert status code}` status code with the response body containing `{describe the important fields of the response}`.

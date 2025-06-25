@@ -33,8 +33,10 @@
             ]
           },
           {
-            "group": "API Flows",
+            "group": "Point of Sale API",
             "pages": [
+              "api-flows/auth",
+              "api-flows/admin",
               "api-flows/patron",
               "api-flows/staff"
             ]
