@@ -88,7 +88,7 @@ The request body for creating dishes should contain the following properties:
 | `description` | string  | *Required* The long-text description of the dish.  |
 | `category` | enum string  | *Required* The category the dish belongs to. Values: `Appetizers`, `Main Course`, `Dessert`, and `Drinks`.   |
 | `preparation_time` | integer | *Optional* The time it takes to prepare the dish, in minutes. |
-| `price` | integer  | *Required* The price of the dish.    |
+| `price` | number  | *Required* The price of the dish.    |
 | `image_name`   | string  | *Optional* The name of the image associated with the dish, if available.  |
 | `station` | enum string | *Required* The name of the station the dish is prepared at. Values: `hot`, `cold`, `beverage`  |
 | `ingredients`   | array of objects | *Required* Object that contains the ingredient details of the ingredients included in the dish.  |

@@ -47,7 +47,7 @@ Each dish object includes the following properties:
 | `description`               | string           | The long-text description of the dish.                                                                       |
 | `category`                  | enum string      | The category the dish belongs to. Values: `Appetizers`, `Main Course`, `Dessert`, and `Drinks`.                        |
 | `preparation_time`          | integer          | The time it takes to prepare the dish, in minutes.                                                           |
-| `price`                     | integer          | The price of the dish.                                                                                       |
+| `price`                     | number          | The price of the dish.                                                                                       |
 | `image_name`                | string           | The name of the image associated with the dish, if available.                                                |
 | `station`                   | enum string      | The name of the station the dish is prepared at. Values: `hot`, `cold`, `beverage`                           |
 | `ingredients`               | array of objects | Object that contains the ingredient details of the ingredients included in the dish.                         |
@@ -104,7 +104,7 @@ If the request was successful, the server responds with a `200 okay` status code
 | `id`                        | string           | The dish id                                                                          |
 | `name`                      | string           | The name of the dish.                                                                |
 | `description`               | string           | The long-text description of the dish.                                               |
-| `price`                     | integer          | The price of the dish.                                                               |
+| `price`                     | number          | The price of the dish.                                                               |
 | `image_name`                | string           | The name of the image associated with the dish, if available                             |
 | `ingredients`               | array of objects | Object that contains the ingredient details of the ingredients included in the dish |
 | `ingredients.ingredient_id` | string           | The id of the ingredient (required for calls later in this flow)                     |
