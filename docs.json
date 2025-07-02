@@ -58,6 +58,12 @@
         "tab": "Point of Sale API Guides",
         "groups": [
           {
+            "group": "About These Guides",
+            "pages": [
+              "api-flows/introduction"
+            ]
+          },
+          {
             "group": "API Flows",
             "pages": [
               "api-flows/auth",
@@ -71,6 +77,12 @@
       {
         "tab": "Point of Sale API Reference",
         "groups": [
+          {
+            "group": "API Documentation",
+            "pages": [
+              "pos-reference/introduction"
+            ]
+          },
           {
             "group": "TBD",
             "pages": [
