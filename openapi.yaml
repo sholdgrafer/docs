@@ -1,0 +1,1919 @@
+openapi: 3.0.3
+info:
+  title: Point of Service (POS) API
+  version: '1.0'
+  description: |
+    An example of a restaurant point of sale API, used to learn how to make API calls using Swagger, Github codespaces, and Postman, and to learn API documentation best practices.
+  contact:
+    name: Course Discord server
+    url: https://discord.gg/dPsnz5u9
+    email: mark.wentowski@docsgeek.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: '{gh-codespaces-server-url}/'
+    description: The server URL used for the point of service API
+    variables:
+      gh-codespaces-server-url:
+        default: https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev
+        description: Codespace URL used by Sarah Holdgrafer for Mastering API Documentation course.
+  - url: http://localhost:80/
+    description: Local URL for testing
+tags:
+  - name: Orders
+    description: Methods for creating and managing orders in the client app.
+  - name: Dishes
+    description: Methods for creating and managing dishes in the client app.
+  - name: Ingredients
+    description: Methods used for creating and managing ingredients in the client app .
+  - name: Users
+    description: Methods for creating and managing the user accounts allowed to access the client app.
+  - name: Auth
+    description: Authentication endpoints for the client app (all methods use Basic auth).
+paths:
+  /orders:
+    post:
+      summary: Create an order
+      operationId: postOrder
+      description: |
+        This operation creates an order in the client app. The order includes the name, table number, dish ids, any special requests, and when the order was scheduled at.
+        
+        The order `id`, `priority`, and `status` provided in the response are used to triage orders to their prep stations and track their progress. 
+      tags:
+        - Orders
+      security:
+        - AccessToken: []
+      responses:
+        '201':
+          description: Order successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: ...
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Unable to complete request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      requestBody:
+        $ref: '#/components/requestBodies/CreateOrderRequest'
+    get:
+      summary: Retrieve a list of orders
+      description: |
+        This operation retreives a list of orders placed in the client app to display in the Kitchen Display System.
+        
+        The expeditor will reference the list of orders to monitor and update the progress of each order. 
+      operationId: getOrderList
+      tags:
+        - Orders
+      parameters:
+        - name: sort
+          in: query
+          description: Determine which property to sort the list by. Used with the `order` parameter.
+          schema:
+            type: string
+          example: priority
+        - name: order
+          in: query
+          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          schema:
+            type: string
+          example: asc
+        - name: fields
+          in: query
+          description: Restrict which properties are returned in the response.
+          schema:
+            type: string
+          example: table_number|status|priority
+        - name: filter
+          in: query
+          description: Filter your response to include only items that have properties that equal the specified value.
+          schema:
+            type: string
+            example: table_number.lt~5|status.eq~On the Way
+        - name: limit
+          in: query
+          description: Limit the number of objects in the response.
+          schema:
+            type: integer
+            maximum: 30
+          example: 10
+        - name: offset
+          in: query
+          description: Offsets the start of the list by the set value. Defaults to 0.
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  total_results:
+                    type: integer
+                    example: 20
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /orders/{id}:
+    get:
+      summary: Retrieve a specific order
+      description: |
+        This method returns the details for a specific order ID.
+        
+        You can specify which properties are returned in the response to display the details needed by the different KDS stations. The `dish_ids` in the response will be used to retrieve dish details needed by the expeditor and prep stations.
+      operationId: getOrder
+      tags:
+        - Orders
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 66294b2a4475a41f3e709bcc
+          description: The unique order identifier, generated when the order was created.
+        - name: fields
+          in: query
+          description: Specify which properties to include in the response.
+          schema:
+            type: string
+          example: table_number|status|priority
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    put:
+      summary: Update a specific order
+      description: |
+        Use this method to add or remove `dish_ids` or update the order's `priority` and `status`. 
+      operationId: putOrder
+      tags:
+        - Orders
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 66294b2a4475a41f3e709bcd
+          description: The unique order identifier, generated when the order was created.
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateOrderRequest'
+      responses:
+        '200':
+          description: Order updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  total_results:
+                    type: integer
+                    example: 1
+        '204':
+          description: Request successful, no content
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Unable to complete request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete:
+      summary: Delete an order
+      description: |
+        Use this method to delete a specific order using its order `id`. 
+        
+        *This action cannot be undone.*
+      operationId: deleteOrder
+      tags:
+        - Orders
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 66294b2a4475a41f3e709bca
+          description: The unique order identifier, generated when the order was created.
+      responses:
+        '204':
+          description: Order successfully deleted
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorizsed
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /orders/{id}/dishes:
+    get:
+      summary: Retrieve the list of dishes in a specific order
+      description: |
+        Use this method to retrieve the list of dishes included in an order along with the dish details. 
+        
+        Each object in the array includes the individual properties of the dishes. The expeditor will use the `category`, `station`, and `preparation_time` values to prioritize dish preparation and send to the appropriate station displays. The station prep will use the list of ingredients during their preparation of the dsih.
+      operationId: getOrderDishes
+      tags:
+        - Orders
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 66294b2a4475a41f3e709bcb
+          description: The unique dish identifier generated when the dish was created.
+        - name: sort
+          in: query
+          description: Determine which property to sort the list by. Used with the `order` parameter.
+          schema:
+            type: string
+          example: station
+        - name: order
+          in: query
+          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          schema:
+            type: string
+          example: asc
+        - name: fields
+          in: query
+          description: Restrict which properties are returned in the response.
+          schema:
+            type: string
+          example: name|station|ingredients
+        - name: filter
+          in: query
+          description: Filter your response to include only items that have properties that equal the specified value.
+          schema:
+            type: string
+            example: created_at.gt~2024-05-07|station.eq~hot
+        - name: limit
+          in: query
+          description: Limit the number of objects in the response.
+          schema:
+            type: integer
+            maximum: 30
+          example: 10
+        - name: offset
+          in: query
+          description: Offsets the start of the list by the set value. Defaults to 0.
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Dish'
+                  total_results:
+                    type: integer
+                    example: 1
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /dishes:
+    post:
+      summary: Create a dish
+      tags:
+        - Dishes
+      operationId: postDishes
+      security:
+        - AccessToken: []
+      description: |
+        Use this method to create a dish and define the dish's details. 
+        
+        The client app will display the `name`, `description`, and `price` and will use the `category` to determine where to display the dish in the menu. The server will check the dish's `ingredient_id` to ensure essential ingredients are in stock (if not in stock, the dish will be disabled in the client app). 
+        
+        The kitchen display system will use the `station`, `preparation_time`, and `ingredients` array when prioritizing and prepping the dish.
+      requestBody:
+        $ref: '#/components/requestBodies/CreateDishRequest'
+      responses:
+        '201':
+          description: Dish successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dish'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: ...
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Unable to complete request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    get:
+      summary: Retrieve a list of dishes
+      description: |
+        Use this method to retrieve a list of dishes and the dish details.
+        
+        The client app will display the `name`, `description`, and `price` and will use the `category` to determine where to display the dish in the menu. The server will check the dish's `ingredient_id` to ensure essential ingredients are in stock (if not in stock, the dish will be disabled in the client app). 
+        
+        The kitchen display system will use the `station`, `preparation_time`, and `ingredients` array when prioritizing and prepping the dish. 
+      operationId: getDishList
+      tags:
+        - Dishes
+      parameters:
+        - name: sort
+          in: query
+          description: Determine which property to sort the list by. Used with the `order` parameter.
+          schema:
+            type: string
+          example: name
+        - name: order
+          in: query
+          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          schema:
+            type: string
+          example: asc
+        - name: fields
+          in: query
+          description: Restrict which properties are returned in the response.
+          schema:
+            type: string
+          example: name|ingredients|station
+        - name: filter
+          in: query
+          description: Filter your response to include only items that have properties that equal the specified value.
+          schema:
+            type: string
+            example: created_at.gt~2024-05-07|price.lte~19.99
+        - name: limit
+          in: query
+          description: Limit the number of objects in the response.
+          schema:
+            type: integer
+            maximum: 30
+          example: 10
+        - name: offset
+          in: query
+          description: Offsets the start of the list by the set value. Defaults to 0.
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Dish'
+                  total_results:
+                    type: integer
+                    example: 20
+                    description: The total number of objects in the results array that were returned in the response.
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /dishes/{id}:
+    get:
+      summary: Retrieve a specific dish
+      description: |
+        This method returns the details for a specific dish ID.
+        
+        You can specify which properties are returned in the response to display the details needed by the client app menu as well as the different KDS stations. The `ingredients` array in the response includes the ingredient IDs that are needed by the client app to determine if a dish is available to order.
+      operationId: getDish
+      tags:
+        - Dishes
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 66294b2a4475a41f3e709bd1
+          description: The unique dish identifier, generated when the dish was created.
+        - name: fields
+          in: query
+          description: Specify which properties to include in the response.
+          schema:
+            type: string
+          example: name|price|station|ingredients
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dish'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    put:
+      summary: Update a specific dish
+      operationId: putDish
+      tags:
+        - Dishes
+      security:
+        - AccessToken: []
+      description: |
+        Use this method to update the following dish properties: `name`, `description`, `category`, `image_name`, `preparation_time`, `price`, and `station`. 
+        
+        Also used to add or remove an `ingredient_id` or change whether that ingredient is considered essential to the dish.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 66294b2a4475a41f3e709bce
+          description: The unique dish identifier, generated when the dish was created.
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateDishRequest'
+      responses:
+        '200':
+          description: Dish updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dish'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: ...
+        '204':
+          description: Request successful, no content
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Unable to complete request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete:
+      summary: Delete a specific dish
+      description: |
+        Use this method to delete a specific dish, using its `id`. 
+        
+        *This operation cannot be undone.*
+      operationId: deleteDish
+      tags:
+        - Dishes
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 66294b2a4475a41f3e709bd0
+          description: The unique dish identifier, generated when the dish was created.
+      responses:
+        '204':
+          description: Request successful, no content
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /dishes/{id}/ingredients:
+    get:
+      summary: Retrieve the list of ingredients for a specific dish
+      description: |
+        Use this method to retrieve the list of ingredients included in a dish along with the ingredient details. 
+        
+        Each object in the array includes the individual properties of the ingredient. The client app will confirm the `in_stock_qty` value and prevent ordering of any dish with insufficient stock (i.e., stock < 0).
+      operationId: getDishIngredients
+      tags:
+        - Dishes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 66294b2a4475a41f3e709bd2
+          description: The unique ingredient identifier, generated when the ingredient was created.
+        - name: sort
+          in: query
+          description: Determine which property to sort the list by. Used with the `order` parameter.
+          schema:
+            type: string
+          example: name
+        - name: order
+          in: query
+          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          schema:
+            type: string
+          example: asc
+        - name: fields
+          in: query
+          description: Restrict which properties are returned in the response.
+          schema:
+            type: string
+          example: name|in_stock_qty
+        - name: filter
+          in: query
+          description: Filter your response to include only items that have properties that equal the specified value.
+          schema:
+            type: string
+            example: created_at.gt~2024-05-07|in_stock_qty.gt~3
+        - name: limit
+          in: query
+          description: Limit the number of objects in the response.
+          schema:
+            type: integer
+            maximum: 30
+          example: 10
+        - name: offset
+          in: query
+          description: Offsets the start of the list by the set value. Defaults to 0.
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Ingredient'
+                  total_results:
+                    type: integer
+                    example: 1
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /ingredients:
+    post:
+      summary: Create an ingredient to use in dishes
+      description: | 
+        This operation creates an ingredient with a `name`, `price`, and `in_stock_qty` that will be associated with specific dishes. 
+        
+        The `id` in the response is used retrieve the ingredient resource, which is most commonly used to check the `in_stock_qty` value for tracking ingredient inventory and determining if a dish is available to order in the client app. 
+      operationId: postIngredient
+      tags:
+        - Ingredients
+      security:
+        - AccessToken: []
+      requestBody:
+        $ref: '#/components/requestBodies/CreateIngredientRequest'
+      responses:
+        '201':
+          description: Ingredient created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: ...
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '409':
+          description: Unable to complete request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    get:
+      summary: Retrieve a list of ingredients
+      description: |
+        Uses this method to retrieve a list of ingredients and the associated details. 
+        
+        The `in_stock_qty` value is most commonly used to for tracking ingredient inventory and determining if a dish is available to order in the client app. A 0 or other non-positive value tells the client app to make a dish unavailable to order if that ingredient is considered essential.
+      operationId: getIngredientList
+      tags:
+        - Ingredients
+      parameters:
+        - name: sort
+          in: query
+          description: Determine which property to sort the list by. Used with the `order` parameter.
+          schema:
+            type: string
+          example: name
+        - name: order
+          in: query
+          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          schema:
+            type: string
+          example: asc
+        - name: fields
+          in: query
+          description: Restrict which properties are returned in the response.
+          schema:
+            type: string
+          example: name|in_stock_qty
+        - name: filter
+          in: query
+          description: Filter your response to include only items that have properties that equal the specified value.
+          schema:
+            type: string
+            example: created_at.gt~2024-05-07|in_stock_qty.lt~5
+        - name: limit
+          in: query
+          description: Limit the number of objects in the response.
+          schema:
+            type: integer
+            maximum: 30
+          example: 10
+        - name: offset
+          in: query
+          description: Offsets the start of the list by the set value. Defaults to 0.
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Ingredient'
+                  total_results:
+                    type: integer
+                    example: 1
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /ingredients/{id}:
+    get:
+      summary: Retrieve a specific ingredient
+      description: |
+        This method returns the details for a specific ingredient ID.
+        
+        You can specify which properties are returned in the response to display the details needed by the client app. 
+      operationId: getIngredient
+      tags:
+        - Ingredients
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 614d706b67c122001f35cc47
+          description: The unique ingredient identifier, generated when the ingredient was created.
+        - name: fields
+          in: query
+          description: Specify which properties to include in the response.
+          schema:
+            type: string
+          example: in_stock_qty|name
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    put:
+      summary: Update a specific ingredient
+      description: |
+        Use this method to update the following ingredient properties: `name`, `price`, and `in_stock_qty`.
+      operationId: putIngredient
+      tags:
+        - Ingredients
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 617d2e09ec42e0001f41bf84
+          description: The unique ingredient identifier, generated when the ingredient was created.
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateIngredientRequest'
+      responses:
+        '200':
+          description: Ingredient successfully updated
+        '204':
+          description: Request successful, no content
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Unable to complete request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete:
+      summary: Delete a specific ingredient
+      description: |
+        Use this method to delete a specific ingredient, using its `id`. 
+        
+        *This operation cannot be undone.*
+      operationId: deleteIngredient
+      tags:
+        - Ingredients
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 61c8c34bb02368001f8f0812
+          description: The unique ingredient identifier, generated when the ingredient was created.
+      responses:
+        '204':
+          description: Ingredient successfully deleted
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /users:
+    post:
+      summary: Create a user account
+      description: |
+        This operation creates a new user account.
+        
+        In the request body, set the new user account `email`, `password`, `user_name`, and `role`. Available values for the `role` property: `patron`, `expeditor`, `chef`, and `manager`.
+        
+        The `user_name` and `password` properties are required to authenticate a user and obtain an access token.
+      operationId: postUser
+      tags:
+        - Users
+      requestBody:
+        $ref: '#/components/requestBodies/CreateUserRequest'
+      responses:
+        '201':
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: ...
+        '400':
+          description: Unauthorized
+        '409':
+          description: Unable to complete request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      security: []
+    get:
+      summary: Retrieve a list of users
+      description: |
+        This operation retreives a list of all users and the user details.
+        
+        The `role` property is commonly use to determine access levels for protected operations. The `user_name` and `password` properties are required to authenticate a user and obtain an access token.
+      operationId: getAllUsers
+      tags:
+        - Users
+      parameters:
+        - name: sort
+          in: query
+          description: Determine which property to sort the list by. Used with the `order` parameter.
+          schema:
+            type: string
+          example: user_name
+        - name: order
+          in: query
+          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          schema:
+            type: string
+          example: asc
+        - name: fields
+          in: query
+          description: Restrict which properties are returned in the response.
+          schema:
+            type: string
+          example: user_name|email|role
+        - name: filter
+          in: query
+          description: Filter your response to include only items that have properties that equal the specified value.
+          schema:
+            type: string
+            example: created_at.gt~2024-05-07|user_name.eq~apiuser01
+        - name: limit
+          in: query
+          description: Limit the number of objects in the response.
+          schema:
+            type: integer
+            maximum: 30
+          example: 10
+        - name: offset
+          in: query
+          description: Offsets the start of the list by the set value. Defaults to 0.
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  total_results:
+                    type: integer
+                    example: 20
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /users/{id}:
+    get:
+      summary: Retreive a specific user
+      description: |
+        Returns the details for a specific user ID.
+        
+        You can specify which properties are returned in the response to display the details needed by the client app or server. The `user_name` and `password` properties are required to authenticate a user and obtain an access token.
+      operationId: getUser
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 66294b2a4475a41f3e709bc9
+          description: The unique user identifier, generated when the user was created.
+        - name: fields
+          in: query
+          description: Specify which properties to include in the response.
+          schema:
+            type: string
+          example: user_name|role
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    put:
+      summary: Update a user
+      description: |
+        Use this operation to update a user's `email`, `password`, `user_name`, or `role` properties.
+      operationId: putUser
+      tags:
+        - Users
+      security:
+        - AccessToken: []
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateUserRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 66294b2a4475a41f3e709bc9
+          description: The unique user identifier, generated when the user was created.
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: ...
+        '204':
+          description: Request successful, no content
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Unable to complete request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete:
+      summary: Delete a user
+      description: |
+        Use this method to delete a specific users, using its `id`.
+        
+        *This operation cannot be undone.*
+      operationId: deleteUser
+      tags:
+        - Users
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 66294b2a4475a41f3e709bca
+          description: The unique user identifier, generated when the user was created.
+      responses:
+        '204':
+          description: User has been successfully deleted
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /auth/token:
+    post:
+      summary: Authenticate the user and obtain an access token
+      description: |
+        This operation exchanges the user's username and password directly for an access token. 
+        
+        The client ID and client secret are used for client authentication (basic). Certain endpoints require the access token in the Authorization header to perform admin functions like creating menus. 
+        
+        If an existing access token is associated with the user, it will be invalidated before a new one is generated.
+      operationId: postAuthLogin
+      tags:
+        - Auth
+      security:
+        - BasicAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/CreateTokenRequest'
+      responses:
+        '201':
+          description: Resource created successfully. The response body contains the newly created resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auth'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: ...
+        '400':
+          description: Invalid request
+        '409':
+          description: Unable to complete request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /auth/refresh-token:
+    post:
+      summary: Refresh an expired access token
+      description: |
+        This operation refreshes an expired access token.
+        
+        Use the `refresh_token` property and value received from the `/auth/token` request to obtain a new access token when needed.
+      operationId: postAuthRefreshToken
+      tags:
+        - Auth
+      requestBody:
+        description: The request body requires only the `refresh_token` property.
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                refresh_token:
+                  $ref: '#/components/schemas/RefreshToken'
+      responses:
+        '200':
+          description: Token successfully refreshed. The response body contains the newly created resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auth'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: ...
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access denied
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  requestBodies:
+    CreateDishRequest:
+      description: |
+        The request body to create a new dish in the client app requires the following properties: 
+        - category
+        - description
+        - image_name
+        - ingredients
+          - ingredients.ingredient_id
+          - ingredients.is_essential
+        - preparation_time
+        - name
+        - price
+        - station
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Risotto alla Milanese
+                description: The name of the dish to display in the client app.
+              description:
+                $ref: '#/components/schemas/Description'
+              category:
+                $ref: '#/components/schemas/Category'
+              image_name:
+                $ref: '#/components/schemas/ImageName'
+              ingredients:
+                $ref: '#/components/schemas/Ingredients'
+              preparation_time:
+                $ref: '#/components/schemas/PreparationTime'
+              price:
+                $ref: '#/components/schemas/Price'
+              station:
+                $ref: '#/components/schemas/Station'
+            required:
+              - category
+              - description
+              - image_name
+              - ingredients
+              - preparation_time
+              - name
+              - price
+              - station
+    UpdateDishRequest:
+      description: The request body to update a dish requires only the properties to be updated.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Risotto alla Milanese
+                description: The name of the dish to display in the client app.
+              description:
+                $ref: '#/components/schemas/Description'
+              category:
+                $ref: '#/components/schemas/Category'
+              image_name:
+                $ref: '#/components/schemas/ImageName'
+              ingredients:
+                $ref: '#/components/schemas/Ingredients'
+              preparation_time:
+                $ref: '#/components/schemas/PreparationTime'
+              price:
+                $ref: '#/components/schemas/Price'
+              station:
+                $ref: '#/components/schemas/Station'
+    CreateIngredientRequest:
+      description: |
+        The request body to create an ingredient to be included with dishes requires the following properties: `name`, `price`, and `in_stock_qty`.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Carrot
+                description: The ingredient name to display in the client app.
+              in_stock_qty:
+                $ref: '#/components/schemas/InStockQty'
+              price:
+                $ref: '#/components/schemas/Price'
+            required:
+              - name
+              - in_stock_qty
+              - price
+    UpdateIngredientRequest:
+      description: |
+        The request body to update one or more ingredient requires only the properties to be updated. 
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Carrot
+                description: The ingredient name to display in the client app.
+              in_stock_qty:
+                $ref: '#/components/schemas/InStockQty'
+              price:
+                $ref: '#/components/schemas/Price'
+    CreateOrderRequest:
+      description: |
+        The request body to create an order requires the following properties: `dish_ids` and `name`.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                pattern: ^[^\s]*$
+                example: John
+                description: The name of the patron to display in the client app.
+              table_number:
+                $ref: '#/components/schemas/TableNumber'
+              dish_ids:
+                $ref: '#/components/schemas/DishIds'
+              special_requests:
+                $ref: '#/components/schemas/SpecialRequests'
+              scheduled_at:
+                $ref: '#/components/schemas/ScheduledAt'
+            required:
+              - dish_ids
+              - name
+          examples:
+            Order - Unscheduled:
+              value:
+                name: Ben
+                table_number: 18
+                dish_ids:
+                  - 692a4a34a46ecf001f35ac6f
+                  - 6a4a857c022eb7001f9b8972
+                  - 6b7c2441a0db43001f9bf377
+                special_requests: No peanuts.
+                scheduled at: null
+            Order - Scheduled:
+              value:
+                name: Ben
+                table_number: 18
+                dish_ids:
+                  - 692a4a34a46ecf001f35ac6f
+                  - 6a4a857c022eb7001f9b8972
+                  - 6b7c2441a0db43001f9bf377
+                scheduled_at: '2024-08-26T09:03:18.865Z'
+    UpdateOrderRequest:
+      description: |
+        The request body to update an order requires only the properties to be updated.
+        
+        Order properties that can be updated: `dish_ids`, `priority`, and `status`.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              dish_ids:
+                $ref: '#/components/schemas/DishIds'
+              priority:
+                $ref: '#/components/schemas/Priority'
+              status:
+                $ref: '#/components/schemas/Status'
+    CreateTokenRequest:
+      description: |
+        The request body to create a token requires the following properties: `grant_type`, `user_name`, and `password`.
+      required: true
+      content:
+        application/json:
+          schema:
+            properties:
+              grant_type:
+                type: string
+                description: Tells the login endpoint to perform the resource owner password credential flow.
+                example: password
+              user_name:
+                $ref: '#/components/schemas/UserName'
+              password:
+                $ref: '#/components/schemas/Password'
+            required:
+              - grant_type
+              - user_name
+              - password
+    CreateUserRequest:
+      description: |
+        The request body to create a user requires the following properties: 
+        
+        - email
+        - password
+        - role
+        - user_name
+        
+        The `user_name` must be unique.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                $ref: '#/components/schemas/Email'
+              password:
+                $ref: '#/components/schemas/Password'
+              role:
+                $ref: '#/components/schemas/Role'
+              user_name:
+                $ref: '#/components/schemas/UserName'
+            required:
+              - email
+              - password
+              - role
+              - user_name
+    UpdateUserRequest:
+      description: |
+        The request body for updating  user requires only the properties to be updated.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                $ref: '#/components/schemas/Email'
+              password:
+                $ref: '#/components/schemas/Password'
+              role:
+                $ref: '#/components/schemas/Role'
+              user_name:
+                $ref: '#/components/schemas/UserName'
+  schemas:
+    AccessToken:
+      type: string
+      description: |
+        An alpha-numeric string generated when authenicating a user and required for protected endpoints. 
+        
+        Expires after ### seconds.
+      example: fa0b97b2-445f-41d2-b50f-fb3b014a301e
+    SpecialRequests:
+      type: string
+      nullable: true
+      description: |
+        This property is used to indicate special requests for an order, like excluding an ingredient due to allergy. 
+    Auth:
+      type: object
+      description: |
+        The response object returned for both `/auth` endpoints.
+      properties:
+        auth_id:
+          $ref: '#/components/schemas/Id'
+        created_at:
+          $ref: '#/components/schemas/CreatedAt'
+        updated_at:
+          $ref: '#/components/schemas/UpdatedAt'
+        access_token:
+          $ref: '#/components/schemas/AccessToken'
+        expires_at:
+          $ref: '#/components/schemas/ExpiresAt'
+        refresh_token:
+          $ref: '#/components/schemas/RefreshToken'
+        token_type:
+          $ref: '#/components/schemas/TokenType'
+        user_name:
+          $ref: '#/components/schemas/UserName'
+    Category:
+      type: string
+      enum:
+        - Appetizer
+        - Main Course
+        - Dessert
+        - Drinks
+      example: Main Course
+      description: |
+        A dish's category used to indicate where in the client app the dish should appear for ordering and use by the expediter to prioritize dishes for preparation.
+    CreatedAt:
+      type: string
+      format: date-time
+      example: '2024-04-22T10:00:00Z'
+      readOnly: true
+      description: | 
+        The date and time the resource was created. Timestamp uses ISO 8601 format, Ex: `2025-04-05T14:55:03.824Z` 
+    Description:
+      type: string
+      example: A description of the resource.
+    Dish:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        created_at:
+          $ref: '#/components/schemas/CreatedAt'
+        name:
+          type: string
+          example: Risotto alla Milanese
+          description: The name of the dish that appears in the client app and for the kitchen display system.
+        description:
+          $ref: '#/components/schemas/Description'
+        category:
+          $ref: '#/components/schemas/Category'
+        image_name:
+          $ref: '#/components/schemas/ImageName'
+        ingredients:
+          $ref: '#/components/schemas/Ingredients'
+        preparation_time:
+          $ref: '#/components/schemas/Price'
+        price:
+          $ref: '#/components/schemas/Price'
+        station:
+          $ref: '#/components/schemas/Station'
+    DishIds:
+      type: array
+      items:
+        type: string
+      example:
+        - 692a4a34a46ecf001f35ac6f
+        - 6a4a857c022eb7001f9b8972
+        - 6b7c2441a0db43001f9bf377
+      description: |
+        The list of unique dish ids included in an order.
+    Email:
+      type: string
+      format: email
+      description: The email address for the user account.
+      example: johndoe@gmail.com
+    ExpiresAt:
+      type: string
+      format: date-time
+      example: '2024-04-22T10:00:00Z'
+      readOnly: true
+      description: |
+        Indicates when a token expires and should be refreshed to maintain a user's authentication. Timestamp uses ISO 8601 format, Ex: `2025-04-05T14:55:03.824Z` 
+    RefreshToken:
+      type: string
+      description: The alpha-numeric refresh token value, used to re-authenticate a user after the authentication token expires.
+      example: d1a3e281-96b6-4f77-a587-7b6c8c2a96d9
+    Id:
+      type: string
+      example: 674d0bf5c28b69001f8e03a1
+      readOnly: true
+      description: |
+        A unique alpha-numeric string generated by the system when creating a resource (e.g., dishes, ingredients, etc). Ids are required for retrieving the properties of a specific resource.
+    ImageName:
+      type: string
+      description: |
+        The name of the image file related to a specific dish. When present, the image for the dish will appear in the client app with the other dish details.
+      example: burger
+    Ingredients:
+      type: array
+      description: The list of ingredients related to a specific dish.
+      items:
+        type: object
+        properties:
+          ingredient_id:
+            type: string
+            example: '66294b2a4475a41f3e709bc5'
+            description: The unique ingredient identifier, generated when the ingredient was created. 
+          is_essential:
+            type: boolean
+            example: true
+            description: |
+              When `true` the ingredient is required to prepare the dish. For essential ingredients, if the ingredient quantity is a non-positive value, the client app will disable the related dishes in the client app.
+      example:
+        - ingredient_id: '66294b2a4475a41f3e709bc5'
+          is_essential: true
+        - ingredient_id: '66294b2a4475a41f3e709bc6'
+          is_essential: true
+        - ingredient_id: '66294b2a4475a41f3e709bc7'
+          is_essential: false
+    Ingredient:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        created_at:
+          $ref: '#/components/schemas/CreatedAt'
+        updated_at:
+          $ref: '#/components/schemas/UpdatedAt'
+        name:
+          type: string
+          example: Carrot
+          description: The name of the ingredient that will appear in the client app.
+        in_stock_qty:
+          $ref: '#/components/schemas/InStockQty'
+        price:
+          $ref: '#/components/schemas/Price'
+    InStockQty:
+      type: integer
+      description: |
+        The quantity of the ingredient currently in stock. This field is used to track the ingredient inventory. If the ingredient is essential and has a value of 0, the associated dish cannot be ordered via the client app.
+      example: 3
+    Order:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        created_at:
+          $ref: '#/components/schemas/CreatedAt'
+        updated_at:
+          $ref: '#/components/schemas/UpdatedAt'
+        name:
+          type: string
+          pattern: ^[^\s]*$
+          example: John
+          description: The name associated with the order, which will appear in the kitchen display system.
+        table_number:
+          $ref: '#/components/schemas/TableNumber'
+        dish_ids:
+          $ref: '#/components/schemas/DishIds'
+        special_requests:
+          $ref: '#/components/schemas/SpecialRequests'
+        priority:
+          $ref: '#/components/schemas/Priority'
+        scheduled_at:
+          $ref: '#/components/schemas/ScheduledAt'
+        status:
+          $ref: '#/components/schemas/Status'
+    Password:
+      type: string
+      description: A password must be at least eight characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@, $, !, %, *, ?, &).
+      example: P@ssw0rd!
+    PreparationTime:
+      type: integer
+      description: The amount of time, in minutes, it takes to prepate the dish. Used by the expeditor and staff to prioritize dish preparation at the various stations.
+      example: 45
+    Price:
+      type: number
+      format: float
+      example: 999
+      description: The price used by the client app to calculate order cost. 
+    Priority:
+      type: integer
+      minimum: 0
+      maximum: 5
+      default: 3
+      description: |
+        The priority of an order. Defaults to 3 but can be changed as needed. Highest priority is 0, lowest is 5.
+        
+        Orders will often be sorted by priority to ensure highest priority orders are prepared first. 
+    Problem:
+      type: object
+      properties:
+        title:
+          type: string
+          description: A short summary of the error or problem encountered with the request.
+          example: Human-readable error title.
+        detail:
+          type: string
+          description: A more detailed description of the error or problem to indicate the source and the solution, if possible.
+          example: Human-readable error details.
+      required:
+        - title
+        - detail
+    Role:
+      type: string
+      enum:
+        - patron
+        - expeditor
+        - chef
+        - manager
+      example: manager
+      description: |
+        The role assigned to a user account. A user's role will determine the level of access available for protected endpoints.
+    ScheduledAt:
+      type: string
+      format: date-time
+      description: | 
+        This field is used to indicate the date and time an order should be ready. These orders fall outside the normal flow of orders as they may be orders for later in the day than when the order was placed or for a future date.
+        
+        Timestamp uses ISO 8601 format, Ex: `2025-04-05T14:55:03.824Z` 
+      nullable: true
+      example: null
+    Station:
+      type: string
+      description: |
+        The prep station responsible for preparing the dish. This value is used by the expeditor to prioritize and triage order preparation for the KDS stations.
+      enum:
+        - cold
+        - hot
+        - beverages
+      example: hot
+    Status:
+      type: string
+      nullable: true
+      enum:
+        - Draft
+        - Received
+        - In Progress
+        - Ready for Assembly
+        - On the Way
+        - Ready for Pickup
+      example: Received
+      description: |
+        This property indicates the status of the order preparation. 
+        
+        The expeditor will use this field to sort incoming orders and determine what dishes are ready to be prepared and assembled by station. 
+    TableNumber:
+      type: integer
+      example: 8
+      nullable: true
+      description: The table number that should be associated with an order.
+    TokenType:
+      type: string
+      description: The type of token used in an `/auth` request.
+      example: Bearer
+    UpdatedAt:
+      type: string
+      format: date-time
+      example: '2024-04-22T10:00:00Z'
+      readOnly: true
+      description: |
+        The date and time the resource was last updated. 
+        
+        Timestamp uses ISO 8601 format, Ex: `2025-04-05T14:55:03.824Z` 
+    User:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        created_at:
+          $ref: '#/components/schemas/CreatedAt'
+        updated_at:
+          $ref: '#/components/schemas/UpdatedAt'
+        user_name:
+          $ref: '#/components/schemas/UserName'
+        email:
+          $ref: '#/components/schemas/Email'
+        password:
+          $ref: '#/components/schemas/Password'
+        role:
+          $ref: '#/components/schemas/Role'
+    UserName:
+      type: string
+      description: The user name of the user for login purposes. It cannot contain spaces.
+      example: john_doe
+  securitySchemes:
+    AccessToken:
+      type: http
+      scheme: bearer
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: The auth type used by all protected endpoints.
