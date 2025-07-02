@@ -45,20 +45,11 @@
               "essentials/navigation",
               "essentials/reusable-snippets"
             ]
-          },
-          {
-            "group": "Point of Sale API",
-            "pages": [
-              "api-flows/auth",
-              "api-flows/admin",
-              "api-flows/patron",
-              "api-flows/staff"
-            ]
           }
         ]
       },
       {
-        "tab": "Plant Store API Reference",
+        "tab": "Sample API Reference",
         "groups": [
           {
             "group": "API Documentation",
