@@ -11,7 +11,21 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Point of Sale API Guides",
+        "groups": [
+          {
+            "group": "API Flows",
+            "pages": [
+              "api-flows/auth",
+              "api-flows/admin",
+              "api-flows/patron",
+              "api-flows/staff"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Mintlify User Guides",
         "groups": [
           {
             "group": "Get Started",
@@ -44,7 +58,7 @@
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Plant Store API Reference",
         "groups": [
           {
             "group": "API Documentation",
