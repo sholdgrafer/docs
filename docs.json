@@ -11,20 +11,6 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Point of Sale API Guides",
-        "groups": [
-          {
-            "group": "API Flows",
-            "pages": [
-              "api-flows/auth",
-              "api-flows/admin",
-              "api-flows/patron",
-              "api-flows/staff"
-            ]
-          }
-        ]
-      },
-      {
         "tab": "Mintlify User Guides",
         "groups": [
           {
@@ -64,6 +50,34 @@
               "api-reference/endpoint/create",
               "api-reference/endpoint/delete",
               "api-reference/endpoint/webhook"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Point of Sale API Guides",
+        "groups": [
+          {
+            "group": "API Flows",
+            "pages": [
+              "api-flows/auth",
+              "api-flows/admin",
+              "api-flows/patron",
+              "api-flows/staff"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Point of Sale API Reference",
+        "groups": [
+          {
+            "group": "TBD",
+            "pages": [
+              "api-flows/auth",
+              "api-flows/admin",
+              "api-flows/patron",
+              "api-flows/staff"
             ]
           }
         ]
