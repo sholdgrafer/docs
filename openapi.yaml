@@ -12,7 +12,7 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 servers:
-  - url: '{gh-codespaces-server-url}/'
+  - url: 'https://reimagined-journey-g45xxv4v6gwhvrrr-80.app.github.dev'
     description: The server URL used for the point of service API
     variables:
       gh-codespaces-server-url:
@@ -37,9 +37,9 @@ paths:
       summary: Create an order
       operationId: postOrder
       description: |
-        This operation creates an order in the client app. The order includes the name, table number, dish ids, any special requests, and when the order was scheduled at.
+        Create an order in the client app. The order includes the name, table number, dish ids, any special requests, and when the order is scheduled for.
         
-        The order `id`, `priority`, and `status` provided in the response are used to triage orders to their prep stations and track their progress. 
+        The order `id`, `priority`, and `status` properties in the response are used to triage orders to their prep stations and track their progress. 
       tags:
         - Orders
       security:
@@ -85,22 +85,22 @@ paths:
     get:
       summary: Retrieve a list of orders
       description: |
-        This operation retreives a list of orders placed in the client app to display in the Kitchen Display System.
+        Retreive a list of orders placed in the client app to display in the Kitchen Display System (KDS).
         
-        The expeditor will reference the list of orders to monitor and update the progress of each order. 
+        The expeditor will reference the list of orders to monitor and update their progress. 
       operationId: getOrderList
       tags:
         - Orders
       parameters:
         - name: sort
           in: query
-          description: Determine which property to sort the list by. Used with the `order` parameter.
+          description: Sort the list in the response by a specific property. Used with the `order` parameter.
           schema:
             type: string
           example: priority
         - name: order
           in: query
-          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          description: Set the sort order to `asc` for ascending or `desc` for descending. Must be used with the `sort` parameter. 
           schema:
             type: string
           example: asc
@@ -112,7 +112,7 @@ paths:
           example: table_number|status|priority
         - name: filter
           in: query
-          description: Filter your response to include only items that have properties that equal the specified value.
+          description: Filter the response to include only items that have properties equal to the specified value.
           schema:
             type: string
             example: table_number.lt~5|status.eq~On the Way
@@ -160,7 +160,7 @@ paths:
     get:
       summary: Retrieve a specific order
       description: |
-        This method returns the details for a specific order ID.
+        Retrieve the details for a specific order ID.
         
         You can specify which properties are returned in the response to display the details needed by the different KDS stations. The `dish_ids` in the response will be used to retrieve dish details needed by the expeditor and prep stations.
       operationId: getOrder
@@ -208,7 +208,7 @@ paths:
     put:
       summary: Update a specific order
       description: |
-        Use this method to add or remove `dish_ids` or update the order's `priority` and `status`. 
+        Add or remove `dish_ids` or update the order's `priority` and `status`. 
       operationId: putOrder
       tags:
         - Orders
@@ -240,7 +240,7 @@ paths:
                     type: integer
                     example: 1
         '204':
-          description: Request successful, no content
+          description: Request successful
         '400':
           description: Invalid request
         '401':
@@ -268,7 +268,7 @@ paths:
     delete:
       summary: Delete an order
       description: |
-        Use this method to delete a specific order using its order `id`. 
+        Delete a specific order using its order `id`. 
         
         *This action cannot be undone.*
       operationId: deleteOrder
@@ -307,9 +307,9 @@ paths:
                 $ref: '#/components/schemas/Problem'
   /orders/{id}/dishes:
     get:
-      summary: Retrieve the list of dishes in a specific order
+      summary: Retrieve list of dishes in an order
       description: |
-        Use this method to retrieve the list of dishes included in an order along with the dish details. 
+        Retrieve the list of dishes included in an order along with the dish details. 
         
         Each object in the array includes the individual properties of the dishes. The expeditor will use the `category`, `station`, and `preparation_time` values to prioritize dish preparation and send to the appropriate station displays. The station prep will use the list of ingredients during their preparation of the dsih.
       operationId: getOrderDishes
@@ -325,13 +325,13 @@ paths:
           description: The unique dish identifier generated when the dish was created.
         - name: sort
           in: query
-          description: Determine which property to sort the list by. Used with the `order` parameter.
+          description: Sort the list in the response by a specific property. Used with the `order` parameter.
           schema:
             type: string
           example: station
         - name: order
           in: query
-          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          description: Set the sort order to `asc` for ascending or `desc` for descending. Must be used with the `sort` parameter.
           schema:
             type: string
           example: asc
@@ -343,7 +343,7 @@ paths:
           example: name|station|ingredients
         - name: filter
           in: query
-          description: Filter your response to include only items that have properties that equal the specified value.
+          description: Filter the response to include only items that have properties equal to the specified value.
           schema:
             type: string
             example: created_at.gt~2024-05-07|station.eq~hot
@@ -402,11 +402,11 @@ paths:
       security:
         - AccessToken: []
       description: |
-        Use this method to create a dish and define the dish's details. 
+        Create a dish and define the dish's details. 
         
         The client app will display the `name`, `description`, and `price` and will use the `category` to determine where to display the dish in the menu. The server will check the dish's `ingredient_id` to ensure essential ingredients are in stock (if not in stock, the dish will be disabled in the client app). 
         
-        The kitchen display system will use the `station`, `preparation_time`, and `ingredients` array when prioritizing and prepping the dish.
+        The KDS will use the `station`, `preparation_time`, and `ingredients` array when prioritizing and prepping the dish.
       requestBody:
         $ref: '#/components/requestBodies/CreateDishRequest'
       responses:
@@ -448,24 +448,24 @@ paths:
     get:
       summary: Retrieve a list of dishes
       description: |
-        Use this method to retrieve a list of dishes and the dish details.
+        Retrieve a list of dishes and the dish details.
         
         The client app will display the `name`, `description`, and `price` and will use the `category` to determine where to display the dish in the menu. The server will check the dish's `ingredient_id` to ensure essential ingredients are in stock (if not in stock, the dish will be disabled in the client app). 
         
-        The kitchen display system will use the `station`, `preparation_time`, and `ingredients` array when prioritizing and prepping the dish. 
+        The KDS will use the `station`, `preparation_time`, and `ingredients` array when prioritizing and prepping the dish. 
       operationId: getDishList
       tags:
         - Dishes
       parameters:
         - name: sort
           in: query
-          description: Determine which property to sort the list by. Used with the `order` parameter.
+          description: Sort the list in the response by a specific property. Used with the `order` parameter.
           schema:
             type: string
           example: name
         - name: order
           in: query
-          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          description: Set the sort order to `asc` for ascending or `desc` for descending. Must be used with the `sort` parameter. 
           schema:
             type: string
           example: asc
@@ -477,7 +477,7 @@ paths:
           example: name|ingredients|station
         - name: filter
           in: query
-          description: Filter your response to include only items that have properties that equal the specified value.
+          description: Filter the response to include only items that have properties equal to the specified value.
           schema:
             type: string
             example: created_at.gt~2024-05-07|price.lte~19.99
@@ -526,7 +526,7 @@ paths:
     get:
       summary: Retrieve a specific dish
       description: |
-        This method returns the details for a specific dish ID.
+        Retreive the details for a specific dish ID.
         
         You can specify which properties are returned in the response to display the details needed by the client app menu as well as the different KDS stations. The `ingredients` array in the response includes the ingredient IDs that are needed by the client app to determine if a dish is available to order.
       operationId: getDish
@@ -579,7 +579,7 @@ paths:
       security:
         - AccessToken: []
       description: |
-        Use this method to update the following dish properties: `name`, `description`, `category`, `image_name`, `preparation_time`, `price`, and `station`. 
+        Update the properties for a specific dish. You can update the following properties: `name`, `description`, `category`, `image_name`, `preparation_time`, `price`, and `station`. 
         
         Also used to add or remove an `ingredient_id` or change whether that ingredient is considered essential to the dish.
       parameters:
@@ -605,7 +605,7 @@ paths:
                 type: string
               description: ...
         '204':
-          description: Request successful, no content
+          description: Request successful
         '400':
           description: Invalid request
         '401':
@@ -631,9 +631,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
     delete:
-      summary: Delete a specific dish
+      summary: Delete a dish
       description: |
-        Use this method to delete a specific dish, using its `id`. 
+        Delete a specific dish using its `id`. 
         
         *This operation cannot be undone.*
       operationId: deleteDish
@@ -651,7 +651,7 @@ paths:
           description: The unique dish identifier, generated when the dish was created.
       responses:
         '204':
-          description: Request successful, no content
+          description: Request successful
         '400':
           description: Invalid request
         '401':
@@ -672,9 +672,9 @@ paths:
                 $ref: '#/components/schemas/Problem'
   /dishes/{id}/ingredients:
     get:
-      summary: Retrieve the list of ingredients for a specific dish
+      summary: Retrieve list of ingredients for a dish
       description: |
-        Use this method to retrieve the list of ingredients included in a dish along with the ingredient details. 
+        Retrieve the list of ingredients included in a dish along with the ingredients' details. 
         
         Each object in the array includes the individual properties of the ingredient. The client app will confirm the `in_stock_qty` value and prevent ordering of any dish with insufficient stock (i.e., stock < 0).
       operationId: getDishIngredients
@@ -690,13 +690,13 @@ paths:
           description: The unique ingredient identifier, generated when the ingredient was created.
         - name: sort
           in: query
-          description: Determine which property to sort the list by. Used with the `order` parameter.
+          description: Sort the list in the response by a specific property. Used with the `order` parameter.
           schema:
             type: string
           example: name
         - name: order
           in: query
-          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          description: Set the sort order to `asc` for ascending or `desc` for descending. Must be used with the `sort` parameter. 
           schema:
             type: string
           example: asc
@@ -708,7 +708,7 @@ paths:
           example: name|in_stock_qty
         - name: filter
           in: query
-          description: Filter your response to include only items that have properties that equal the specified value.
+          description: Filter the response to include only items that have properties equal to the specified value.
           schema:
             type: string
             example: created_at.gt~2024-05-07|in_stock_qty.gt~3
@@ -760,9 +760,9 @@ paths:
                 $ref: '#/components/schemas/Problem'
   /ingredients:
     post:
-      summary: Create an ingredient to use in dishes
+      summary: Create an ingredient
       description: | 
-        This operation creates an ingredient with a `name`, `price`, and `in_stock_qty` that will be associated with specific dishes. 
+        Ccreate an ingredient with a `name`, `price`, and `in_stock_qty`. Ingredients will be associated with specific dishes. 
         
         The `id` in the response is used retrieve the ingredient resource, which is most commonly used to check the `in_stock_qty` value for tracking ingredient inventory and determining if a dish is available to order in the client app. 
       operationId: postIngredient
@@ -803,9 +803,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
     get:
-      summary: Retrieve a list of ingredients
+      summary: Retrieve list of ingredients
       description: |
-        Uses this method to retrieve a list of ingredients and the associated details. 
+        Retrieve a list of ingredients and the associated details. 
         
         The `in_stock_qty` value is most commonly used to for tracking ingredient inventory and determining if a dish is available to order in the client app. A 0 or other non-positive value tells the client app to make a dish unavailable to order if that ingredient is considered essential.
       operationId: getIngredientList
@@ -814,13 +814,13 @@ paths:
       parameters:
         - name: sort
           in: query
-          description: Determine which property to sort the list by. Used with the `order` parameter.
+          description: Sort the list in the response by a specific property. Used with the `order` parameter.
           schema:
             type: string
           example: name
         - name: order
           in: query
-          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          description: Set the sort order to `asc` for ascending or `desc` for descending. Must be used with the `sort` parameter. 
           schema:
             type: string
           example: asc
@@ -832,7 +832,7 @@ paths:
           example: name|in_stock_qty
         - name: filter
           in: query
-          description: Filter your response to include only items that have properties that equal the specified value.
+          description: Filter the response to include only items that have properties equal to the specified value.
           schema:
             type: string
             example: created_at.gt~2024-05-07|in_stock_qty.lt~5
@@ -878,9 +878,9 @@ paths:
                 $ref: '#/components/schemas/Problem'
   /ingredients/{id}:
     get:
-      summary: Retrieve a specific ingredient
+      summary: Retrieve an ingredient
       description: |
-        This method returns the details for a specific ingredient ID.
+        Retrieve the details for a specific ingredient ID.
         
         You can specify which properties are returned in the response to display the details needed by the client app. 
       operationId: getIngredient
@@ -926,9 +926,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
     put:
-      summary: Update a specific ingredient
+      summary: Update an ingredient
       description: |
-        Use this method to update the following ingredient properties: `name`, `price`, and `in_stock_qty`.
+        Update an ingredient's details. You can update the following properties: `name`, `price`, and `in_stock_qty`.
       operationId: putIngredient
       tags:
         - Ingredients
@@ -948,7 +948,7 @@ paths:
         '200':
           description: Ingredient successfully updated
         '204':
-          description: Request successful, no content
+          description: Request successful
         '400':
           description: Invalid request
         '401':
@@ -974,9 +974,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
     delete:
-      summary: Delete a specific ingredient
+      summary: Delete an ingredient
       description: |
-        Use this method to delete a specific ingredient, using its `id`. 
+        Delete a specific ingredient using its `id`. 
         
         *This operation cannot be undone.*
       operationId: deleteIngredient
@@ -1017,7 +1017,7 @@ paths:
     post:
       summary: Create a user account
       description: |
-        This operation creates a new user account.
+        Create a new user account for accessing the client app.
         
         In the request body, set the new user account `email`, `password`, `user_name`, and `role`. Available values for the `role` property: `patron`, `expeditor`, `chef`, and `manager`.
         
@@ -1057,22 +1057,22 @@ paths:
     get:
       summary: Retrieve a list of users
       description: |
-        This operation retreives a list of all users and the user details.
+        Retreive a list of all users and the user details.
         
-        The `role` property is commonly use to determine access levels for protected operations. The `user_name` and `password` properties are required to authenticate a user and obtain an access token.
+        The `role` property is used to determine access levels for protected endpoints. The `user_name` and `password` properties are required to authenticate a user and obtain an access token.
       operationId: getAllUsers
       tags:
         - Users
       parameters:
         - name: sort
           in: query
-          description: Determine which property to sort the list by. Used with the `order` parameter.
+          description: Sort the list in the response by a specific property. Used with the `order` parameter.
           schema:
             type: string
           example: user_name
         - name: order
           in: query
-          description: Used with the `sort` parameter. Set to `asc` for ascending order or `desc` for descending order.
+          description: Set the sort order to `asc` for ascending or `desc` for descending. Must be used with the `sort` parameter. 
           schema:
             type: string
           example: asc
@@ -1084,7 +1084,7 @@ paths:
           example: user_name|email|role
         - name: filter
           in: query
-          description: Filter your response to include only items that have properties that equal the specified value.
+          description: Filter the response to include only items that have properties equal to the specified value.
           schema:
             type: string
             example: created_at.gt~2024-05-07|user_name.eq~apiuser01
@@ -1130,9 +1130,9 @@ paths:
                 $ref: '#/components/schemas/Problem'
   /users/{id}:
     get:
-      summary: Retreive a specific user
+      summary: Retrieve a user
       description: |
-        Returns the details for a specific user ID.
+        Retrieve the details for a specific user ID.
         
         You can specify which properties are returned in the response to display the details needed by the client app or server. The `user_name` and `password` properties are required to authenticate a user and obtain an access token.
       operationId: getUser
@@ -1180,7 +1180,7 @@ paths:
     put:
       summary: Update a user
       description: |
-        Use this operation to update a user's `email`, `password`, `user_name`, or `role` properties.
+        Update a user's `email`, `password`, `user_name`, or `role` properties.
       operationId: putUser
       tags:
         - Users
@@ -1209,7 +1209,7 @@ paths:
                 type: string
               description: ...
         '204':
-          description: Request successful, no content
+          description: Request successful
         '400':
           description: Invalid request
         '401':
@@ -1237,7 +1237,7 @@ paths:
     delete:
       summary: Delete a user
       description: |
-        Use this method to delete a specific users, using its `id`.
+        Delete a specific user using its `id`.
         
         *This operation cannot be undone.*
       operationId: deleteUser
@@ -1276,11 +1276,11 @@ paths:
                 $ref: '#/components/schemas/Problem'
   /auth/token:
     post:
-      summary: Authenticate the user and obtain an access token
+      summary: Authenticate user and obtain access token
       description: |
-        This operation exchanges the user's username and password directly for an access token. 
+        Exchange the user's username and password for an access token. 
         
-        The client ID and client secret are used for client authentication (basic). Certain endpoints require the access token in the Authorization header to perform admin functions like creating menus. 
+        The client ID and client secret are used for client authentication (basic). Certain endpoints require the access token in the Authorization header to perform admin functions, like creating menus. 
         
         If an existing access token is associated with the user, it will be invalidated before a new one is generated.
       operationId: postAuthLogin
@@ -1318,9 +1318,9 @@ paths:
                 $ref: '#/components/schemas/Problem'
   /auth/refresh-token:
     post:
-      summary: Refresh an expired access token
+      summary: Refresh expired access token
       description: |
-        This operation refreshes an expired access token.
+        Refresh an expired access token.
         
         Use the `refresh_token` property and value received from the `/auth/token` request to obtain a new access token when needed.
       operationId: postAuthRefreshToken
@@ -1370,16 +1370,16 @@ components:
     CreateDishRequest:
       description: |
         The request body to create a new dish in the client app requires the following properties: 
-        - category
-        - description
-        - image_name
-        - ingredients
-          - ingredients.ingredient_id
-          - ingredients.is_essential
-        - preparation_time
-        - name
-        - price
-        - station
+        - `category`
+        - `description`
+        - `image_name`
+        - `ingredients`
+          - `ingredients.ingredient_id`
+          - `ingredients.is_essential`
+        - `preparation_time`
+        - `name`
+        - `price`
+        - `station`
       required: true
       content:
         application/json:
@@ -1563,10 +1563,10 @@ components:
       description: |
         The request body to create a user requires the following properties: 
         
-        - email
-        - password
-        - role
-        - user_name
+        - `email`
+        - `password`
+        - `role`
+        - `user_name`
         
         The `user_name` must be unique.
       required: true
@@ -1590,7 +1590,7 @@ components:
               - user_name
     UpdateUserRequest:
       description: |
-        The request body for updating  user requires only the properties to be updated.
+        The request body for updating a user requires only the properties to be updated.
       required: true
       content:
         application/json:
@@ -1617,7 +1617,7 @@ components:
       type: string
       nullable: true
       description: |
-        This property is used to indicate special requests for an order, like excluding an ingredient due to allergy. 
+        Indicates special requests for an order, like excluding an ingredient due to allergy. 
     Auth:
       type: object
       description: |
@@ -1648,7 +1648,7 @@ components:
         - Drinks
       example: Main Course
       description: |
-        A dish's category used to indicate where in the client app the dish should appear for ordering and use by the expediter to prioritize dishes for preparation.
+        Used to indicate where in the client app the dish should appear for ordering and used by the expediter to prioritize dishes for preparation.
     CreatedAt:
       type: string
       format: date-time
@@ -1669,7 +1669,7 @@ components:
         name:
           type: string
           example: Risotto alla Milanese
-          description: The name of the dish that appears in the client app and for the kitchen display system.
+          description: The name of the dish that appears in the client app and for the KDS.
         description:
           $ref: '#/components/schemas/Description'
         category:
@@ -1778,7 +1778,7 @@ components:
           type: string
           pattern: ^[^\s]*$
           example: John
-          description: The name associated with the order, which will appear in the kitchen display system.
+          description: The name associated with the order, which will appear in the KDS.
         table_number:
           $ref: '#/components/schemas/TableNumber'
         dish_ids:
@@ -1793,7 +1793,7 @@ components:
           $ref: '#/components/schemas/Status'
     Password:
       type: string
-      description: A password must be at least eight characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@, $, !, %, *, ?, &).
+      description: Passwords must be at least eight characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@, $, !, %, *, ?, &).
       example: P@ssw0rd!
     PreparationTime:
       type: integer
@@ -1841,7 +1841,7 @@ components:
       type: string
       format: date-time
       description: | 
-        This field is used to indicate the date and time an order should be ready. These orders fall outside the normal flow of orders as they may be orders for later in the day than when the order was placed or for a future date.
+        Indicate the date and time an order should be ready. These orders fall outside the typical order flow as they may be orders for later in the day or for a future date.
         
         Timestamp uses ISO 8601 format, Ex: `2025-04-05T14:55:03.824Z` 
       nullable: true
@@ -1867,7 +1867,7 @@ components:
         - Ready for Pickup
       example: Received
       description: |
-        This property indicates the status of the order preparation. 
+        Indicates the status of the order preparation. 
         
         The expeditor will use this field to sort incoming orders and determine what dishes are ready to be prepared and assembled by station. 
     TableNumber:
@@ -1907,7 +1907,7 @@ components:
           $ref: '#/components/schemas/Role'
     UserName:
       type: string
-      description: The user name of the user for login purposes. It cannot contain spaces.
+      description: The user name for account login purposes. User names cannot contain spaces.
       example: john_doe
   securitySchemes:
     AccessToken:
