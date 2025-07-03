@@ -55,7 +55,7 @@
         ]
       },
       {
-        "tab": "Point of Sale API Guides",
+        "tab": "Point of Service API Guides",
         "groups": [
           {
             "group": "About These Guides",
@@ -75,7 +75,7 @@
         ]
       },
       {
-        "tab": "Point of Sale API Reference",
+        "tab": "Point of Service API Reference",
         "groups": [
           {
             "group": "API Documentation",
