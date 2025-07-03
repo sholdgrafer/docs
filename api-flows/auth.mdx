@@ -1,6 +1,6 @@
-# Point of Sale API Authentication Flow
+# Point of Service API Authentication Flow
 
-The Point of Sale (POS) API admin panel uses Basic authentication and the OAuth Resource Owner Password Credentials (ROPC) Flow.
+The Point of Service (POS) API admin panel uses Basic authentication and the OAuth Resource Owner Password Credentials (ROPC) Flow.
 
 To provide the proper experience for admins using the POS admin panel, you'll need to provide the following capabilities: 
 
@@ -72,7 +72,7 @@ Response body properties:
 | `refresh_token` | string | The value of the refresh token, used to obtain the new access token after it expires |
 | `token_type` | string | The type of access token, which will always be `Bearer` |
 
-## Refresh the access token
+## Step 3: Refresh the access token
 
 After the `access_token` expires, you can refresh the access token by sending a POST call to the `/auth/refresh-token` endpoint.
 
